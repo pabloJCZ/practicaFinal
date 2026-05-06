@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      target: runner
+    container_name: bildyapp-api
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    env_file:
+      - .env
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/bildyapp
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - bildyapp-network
+
+  mongo:
+    image: mongo:7
+    container_name: bildyapp-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=bildyapp
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bildyapp-network
+
+volumes:
+  mongo-data:
+
+networks:
+  bildyapp-network:
+    driver: bridge
