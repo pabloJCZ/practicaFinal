@@ -1,5 +1,4 @@
-# ── Stage 1: Builder ──────────────────────────────────────────────
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -8,10 +7,8 @@ RUN npm ci --omit=dev
 
 COPY src ./src
 
-# ── Stage 2: Runner ───────────────────────────────────────────────
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 
-# Seguridad: usuario no-root
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 WORKDIR /app

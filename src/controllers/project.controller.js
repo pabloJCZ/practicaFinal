@@ -10,7 +10,6 @@ export const createProject = async (req, res, next) => {
     const companyId = getCompanyId(req);
     if (!companyId) return next(new AppError('Debes tener una compañía para crear proyectos.', 400));
 
-    // Verificar que el cliente pertenece a la compañía
     const client = await Client.findOne({ _id: req.body.client, company: companyId, deleted: false });
     if (!client) return next(new AppError('Cliente no encontrado en tu compañía.', 404));
 
@@ -28,6 +27,12 @@ export const createProject = async (req, res, next) => {
 export const updateProject = async (req, res, next) => {
   try {
     const companyId = getCompanyId(req);
+
+    if (req.body.client) {
+      const client = await Client.findOne({ _id: req.body.client, company: companyId, deleted: false });
+      if (!client) return next(new AppError('Cliente no encontrado en tu compañía.', 404));
+    }
+
     const project = await Project.findOneAndUpdate(
       { _id: req.params.id, company: companyId, deleted: false },
       req.body,

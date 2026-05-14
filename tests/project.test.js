@@ -7,6 +7,7 @@ import { Company } from '../src/models/Company.js';
 
 let token;
 let clientId;
+let projectId;
 
 const setupUser = async () => {
   const registerRes = await request(app)
@@ -76,6 +77,24 @@ describe('Projects - /api/project', () => {
       expect(res.status).toBe(200);
       expect(res.body.data.projects).toHaveLength(2);
       expect(res.body.pagination.totalItems).toBe(2);
+    });
+  });
+
+  describe('PUT /api/project/:id', () => {
+    it('debe rechazar cliente de otra compañía en update', async () => {
+      const createRes = await request(app)
+        .post('/api/project')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'Proyecto Cross', projectCode: 'CROSS-001', client: clientId });
+
+      const projectId = createRes.body.data.project._id;
+
+      const res = await request(app)
+        .put(`/api/project/${projectId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ client: '000000000000000000000000' });
+
+      expect(res.status).toBe(404);
     });
   });
 
